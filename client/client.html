@@ -177,6 +177,83 @@
       </div>
     </div>
     <div class="content" style="display:block">
+      <div class="content-box">
+        <h3>Get pokemon by type</h3>
+        <form data-method="GET" data-endpoint="/pokedex/getPokemonByType">
+          <label>
+            <input type="radio" name="method" value="GET" checked>
+            " GET"
+          </label>
+          <input type="radio" name="method" value="HEAD">
+          " HEAD"
+          </label><br>
+          <label for="fruit">Choose a type:</label>
+          <select id="pokemonType" name="pokemonType">
+            <option value="Normal">Normal</option>
+            <option value="Fire">Fire</option>
+            <option value="Water">Water</option>
+            <option value="Grass">Grass</option>
+            <option value="Electric">Electric</option>
+            <option value="Ice">Ice</option>
+            <option value="Fighting">Fighting</option>
+            <option value="Poison">Poison</option>
+            <option value="Ground">Ground</option>
+            <option value="Flying">Flying</option>
+            <option value="Psychic">Psychic</option>
+            <option value="Bug">Bug</option>
+            <option value="Rock">Rock</option>
+            <option value="Ghost">Ghost</option>
+            <option value="Dragon">Dragon</option>
+            <option value="Dark">Dark</option>
+            <option value="Steel">Steel</option>
+            <option value="Fairy">Fairy</option>
+          </select>
+          <br><button type="submit">Send Request</button>
+        </form>
+        <pre class="result"></pre>
+
+      </div>
+    </div>
+
+    <div class="content" style="display:block">
+      <div class="content-box">
+        <h3>Get pokemon by weakness</h3>
+        <form data-method="GET" data-endpoint="/pokedex/getPokemonByWeakness">
+          <label>
+            <input type="radio" name="method" value="GET" checked>
+            " GET"
+          </label>
+          <input type="radio" name="method" value="HEAD">
+          " HEAD"
+          </label><br>
+          <label for="fruit">Choose a type:</label>
+          <select id="pokemonType" name="pokemonType">
+            <option value="Normal">Normal</option>
+            <option value="Fire">Fire</option>
+            <option value="Water">Water</option>
+            <option value="Grass">Grass</option>
+            <option value="Electric">Electric</option>
+            <option value="Ice">Ice</option>
+            <option value="Fighting">Fighting</option>
+            <option value="Poison">Poison</option>
+            <option value="Ground">Ground</option>
+            <option value="Flying">Flying</option>
+            <option value="Psychic">Psychic</option>
+            <option value="Bug">Bug</option>
+            <option value="Rock">Rock</option>
+            <option value="Ghost">Ghost</option>
+            <option value="Dragon">Dragon</option>
+            <option value="Dark">Dark</option>
+            <option value="Steel">Steel</option>
+            <option value="Fairy">Fairy</option>
+          </select>
+          <br><button type="submit">Send Request</button>
+        </form>
+        <pre class="result"></pre>
+
+      </div>
+    </div>
+    <div class="content" style="display:block">
 
       <div class="content-box">
         <h3>changePokemonName</h3>

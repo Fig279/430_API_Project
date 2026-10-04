@@ -5,11 +5,6 @@ const fs = require('fs');
 const rawData = fs.readFileSync('./pokedex.json', 'utf8');
 const pokedexData = JSON.parse(rawData);
 
-// Note this object is purely in memory
-// When node shuts down this will be cleared.
-// Same when your heroku app shuts down from inactivity
-// We will be working with databases in the next few weeks.
-const users = {};
 
 
 // function to respond with a json object
@@ -22,9 +17,8 @@ const respondJSON = (request, response, status, object) => {
     'Content-Length': Buffer.byteLength(content, 'utf8'),
   });
 
-  // HEAD requests don't get a body with their response.
-  // Similarly, 204 status codes are "no content" responses
-  // so they also do not get a response body.
+
+  //  no response body.
   if (request.method !== 'HEAD' && status !== 204) {
     response.write(content);
   }
@@ -34,7 +28,6 @@ const respondJSON = (request, response, status, object) => {
 
 
 const changeName = (request, response) => {
-  console.log("CHANGENAME TRIGGERED");
   // default json message
   const responseJSON = {
     message: 'Name and id are both required.',
@@ -66,12 +59,12 @@ const changeName = (request, response) => {
   return respondJSON(request, response, responseCode, {});
 };
 
+/// finds uses the pathname to call the correct handler for this endpoint
 const getData = (request, response, parsedUrl) => {
-  console.log("GET DATA");
   endpointHandlers[parsedUrl.pathname](request, response, parsedUrl);
 };
 
-const getPokemon = (request, response, parsedUrl) => {
+const getPokemonByID = (request, response, parsedUrl) => {
   const pokemon = pokedexData[parsedUrl.searchParams.get('pokedexNum') - 1];
 
   const responseJSON = {
@@ -82,7 +75,50 @@ const getPokemon = (request, response, parsedUrl) => {
 
 };
 
+const getPokemonByType = (request, response, parsedUrl) => {
+  const desiredType = parsedUrl.searchParams.get('pokemonType');
+  
+  var pokemon = [];
+
+  for (var i = 0; i < pokedexData.length; i++){
+
+    // if the pokemon has the required type, add them to the dataset
+    if(pokedexData[i]["type"].includes(desiredType)){
+      pokemon.push(pokedexData[i]);
+    }
+  }
+
+  const responseJSON = {
+    pokemon
+  };
+
+  respondJSON(request, response, 200, responseJSON);
+
+};
+
+const getPokemonByWeakness = (request, response, parsedUrl) => {
+  const typeWeakness = parsedUrl.searchParams.get('pokemonType');
+  
+  var pokemon = [];
+
+  for (var i = 0; i < pokedexData.length; i++){
+
+    // if the pokemon has the required type, add them to the dataset
+    if(pokedexData[i]["weaknesses"].includes(typeWeakness)){
+      pokemon.push(pokedexData[i]);
+    }
+  }
+
+  const responseJSON = {
+    pokemon
+  };
+
+  respondJSON(request, response, 200, responseJSON);
+
+};
+
 const getAll = (request, response, parsedUrl) => {
+  parsedUrl;
   const responseJSON = {
     pokedexData
   };
@@ -91,8 +127,10 @@ const getAll = (request, response, parsedUrl) => {
 }
 
 const endpointHandlers = {
-  "/pokedex/getPokemonByNum": getPokemon,
-  "/pokedex/getAll": getAll
+  "/pokedex/getPokemonByNum": getPokemonByID,
+  "/pokedex/getAll": getAll,
+  "/pokedex/getPokemonByType" : getPokemonByType,
+  "/pokedex/getPokemonByWeakness" : getPokemonByWeakness
 };
 
 // public exports
