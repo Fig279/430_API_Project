@@ -33,12 +33,12 @@ const changeName = (request, response) => {
     message: 'Name and id are both required.',
   };
 
-  const { name, pokedexNum  } = request.body;
+  const { name, pokedexNum } = request.body;
 
 
   // check that we have both required params
-  if (!name || !pokedexNum ) {
-    responseJSON.pokedexNum  = 'missingParams';
+  if (!name || !pokedexNum) {
+    responseJSON = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
 
@@ -46,18 +46,52 @@ const changeName = (request, response) => {
   let responseCode = 204;
 
   // If the pokemon doesn't exist
-  if (!pokedexData[pokedexNum  - 1]) {
+  if (!pokedexData[pokedexNum - 1]) {
     responseCode = 404;
   }
   else {
 
     // update pokemons name
-    pokedexData[pokedexNum  - 1].name = name;
+    pokedexData[pokedexNum - 1].name = name;
   }
 
   // no response needed, send empty object
   return respondJSON(request, response, responseCode, {});
 };
+
+const addPokemon = (request, response) => {
+  // default json message
+  const responseJSON = {
+    message: 'Name and type are both required.',
+  };
+
+  const { name, pokemonType } = request.body;
+
+
+  // check that we have both required params
+  if (!name || !pokemonType) {
+    responseJSON = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+
+  // Set the status code to 201 (created)
+  responseCode = 201;
+
+  // create a pokemon object
+  var newPokemon = {
+    "id": pokedexData.length,
+    "name": name,
+  "type": pokemonType};
+
+  // add the object to the dataset
+  pokedexData.push(newPokemon);
+
+
+  // no response needed, send empty object
+  return respondJSON(request, response, responseCode, {});
+
+}
 
 /// finds uses the pathname to call the correct handler for this endpoint
 const getData = (request, response, parsedUrl) => {
@@ -77,13 +111,13 @@ const getPokemonByID = (request, response, parsedUrl) => {
 
 const getPokemonByType = (request, response, parsedUrl) => {
   const desiredType = parsedUrl.searchParams.get('pokemonType');
-  
+
   var pokemon = [];
 
-  for (var i = 0; i < pokedexData.length; i++){
+  for (var i = 0; i < pokedexData.length; i++) {
 
     // if the pokemon has the required type, add them to the dataset
-    if(pokedexData[i]["type"].includes(desiredType)){
+    if (pokedexData[i]["type"].includes(desiredType)) {
       pokemon.push(pokedexData[i]);
     }
   }
@@ -98,13 +132,13 @@ const getPokemonByType = (request, response, parsedUrl) => {
 
 const getPokemonByWeakness = (request, response, parsedUrl) => {
   const typeWeakness = parsedUrl.searchParams.get('pokemonType');
-  
+
   var pokemon = [];
 
-  for (var i = 0; i < pokedexData.length; i++){
+  for (var i = 0; i < pokedexData.length; i++) {
 
     // if the pokemon has the required type, add them to the dataset
-    if(pokedexData[i]["weaknesses"].includes(typeWeakness)){
+    if (pokedexData[i]["weaknesses"].includes(typeWeakness)) {
       pokemon.push(pokedexData[i]);
     }
   }
@@ -129,12 +163,13 @@ const getAll = (request, response, parsedUrl) => {
 const endpointHandlers = {
   "/pokedex/getPokemonByNum": getPokemonByID,
   "/pokedex/getAll": getAll,
-  "/pokedex/getPokemonByType" : getPokemonByType,
-  "/pokedex/getPokemonByWeakness" : getPokemonByWeakness
+  "/pokedex/getPokemonByType": getPokemonByType,
+  "/pokedex/getPokemonByWeakness": getPokemonByWeakness
 };
 
 // public exports
 module.exports = {
   changeName,
-  getData
+  getData,
+  addPokemon
 };

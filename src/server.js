@@ -65,6 +65,10 @@ const handlePost = (request, response, parsedUrl) => {
     // paresebody with a handler function
     parseBody(request, response, jsonHandler.changeName);
   }
+  else if(parsedUrl.pathname === '/pokedex/addPokemon'){
+    parseBody(request, response, jsonHandler.addPokemon);
+
+  }
 };
 
 const onRequest = (request, response) => {
