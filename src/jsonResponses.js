@@ -38,7 +38,7 @@ const changeName = (request, response) => {
 
   // check that we have both required params
   if (!name || !pokedexNum) {
-    responseJSON = 'missingParams';
+    responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
 
@@ -53,6 +53,11 @@ const changeName = (request, response) => {
 
     // update pokemons name
     pokedexData[pokedexNum - 1].name = name;
+  }
+
+  if (responseCode === 201) {
+    responseJSON.message = 'Created Successfully';
+    return respondJSON(request, response, responseCode, responseJSON);
   }
 
   // no response needed, send empty object
@@ -70,23 +75,29 @@ const addPokemon = (request, response) => {
 
   // check that we have both required params
   if (!name || !pokemonType) {
-    responseJSON = 'missingParams';
+    responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
 
 
   // Set the status code to 201 (created)
-  responseCode = 201;
+  let responseCode = 201;
 
   // create a pokemon object
   var newPokemon = {
     "id": pokedexData.length,
     "name": name,
-  "type": pokemonType};
+    "type": pokemonType
+  };
 
   // add the object to the dataset
   pokedexData.push(newPokemon);
 
+
+  if (responseCode === 201) {
+    responseJSON.message = 'Created Successfully';
+    return respondJSON(request, response, responseCode, responseJSON);
+  }
 
   // no response needed, send empty object
   return respondJSON(request, response, responseCode, {});
