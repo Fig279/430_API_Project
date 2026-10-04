@@ -1,0 +1,19 @@
+{
+  "name": "430_api_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "eslint.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fig279/430_API_Project.git"
+  },
+  "author": "FG",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Fig279/430_API_Project/issues"
+  },
+  "homepage": "https://github.com/Fig279/430_API_Project#readme"
+}
