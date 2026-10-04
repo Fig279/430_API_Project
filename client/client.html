@@ -37,47 +37,40 @@
       const text = await response.text();
       const obj = text ? JSON.parse(text) : null;
 
+      if (!obj) {
+        return;
+      }
       //If we have a message, display it.
-      if (obj && obj.message) {
+      if (obj.message) {
         content.innerHTML += `<p>${obj.message}</p>`;
       }
 
-      // if users were included in this reponse, display them
-      if (obj.pokemon) {
-        content.innerHTML += `<p>${JSON.stringify(obj.pokemon)}</p>`;
-      }
+
+      // format output to be more readable
+      content.innerHTML += `<pre>${JSON.stringify(obj, null, 2)}</pre>`;
+
 
     };
 
     //Uses fetch to send a postRequest. Marksed as async because we use await
     //within it.
-    const sendPost = async (nameForm) => {
-      //Grab all the info from the form
-      const url = nameForm.getAttribute('action');
-      const method = nameForm.getAttribute('method');
+    const sendPost = async (requestForm, endpoint) => {
 
-      const name = nameForm.querySelector('#nameField').value;
-      const age = nameForm.querySelector('#ageField').value;
-      const dataType = nameForm.querySelector('#dataType').value;
-
-      //Build a data string in the FORM-URLENCODED format.
-      let formData = `name=${name}&age=${age}`;
-
-      //If the user selected JSON, send that instead
-      if (dataType === 'application/json') {
-        formData = JSON.stringify({ name, age });
-      }
+      // create an object with the search parameters
+      const formData = new URLSearchParams(requestForm).toString();
+      const dataType = 'application/x-www-form-urlencoded';
+      //const method = requestForm.getAttribute('method');
 
       //Make a fetch request and await a response
-      const response = await fetch(url, {
-        method: method,
+      const response = await fetch(endpoint, {
+        method: "POST",
         headers: {
           'Content-Type': dataType,
-          'Content-Length': formData.length,
           'Accept': 'application/json',
         },
         body: formData,
       });
+      console.log(response);
 
       //Once we have a response, handle it.
       handleResponse(response);
@@ -119,12 +112,12 @@
           const endpoint = form.getAttribute('data-endpoint');
 
           const formData = new FormData(form);
-          const selectedMethod = formData.get('method');
+          const selectedMethod = form.getAttribute('data-method');
 
-          console.log(`Sending ${formData} request to ${formData.method}`);
+          console.log(`Sending ${formData} request to ${selectedMethod}`);
 
           if (selectedMethod == "POST") {
-            console.log("POST");
+            sendPost(formData, endpoint);
 
           }
           else {
@@ -168,8 +161,8 @@
     </div>
     <div class="content" style="display:block">
       <div class="content-box">
-        <h3>Endpoint test</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getFilmTitles">
+        <h3>Get all</h3>
+        <form data-method="GET" data-endpoint="/pokedex/getAll">
           <label>
             <input type="radio" name="method" value="GET" checked>
             " GET"
@@ -181,6 +174,18 @@
         </form>
         <pre class="result"></pre>
 
+      </div>
+    </div>
+    <div class="content" style="display:block">
+
+      <div class="content-box">
+        <h3>changePokemonName</h3>
+        <form data-method="POST" data-endpoint="/pokedex/changePokemonName">
+          <label>Pokedex Num: <input type="number" name="pokedexNum" min="1" max="151"></label><br>
+          <label>New Name: <input type="text" name="name"></label><br>
+          <button type="submit">Send Request</button>
+        </form>
+        <pre class="result"></pre>
       </div>
     </div>
 

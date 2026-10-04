@@ -32,75 +32,49 @@ const respondJSON = (request, response, status, object) => {
   response.end();
 };
 
-// return user object as JSON
-const getUsers = (request, response) => {
-  const responseJSON = {
-    users,
-  };
 
-  respondJSON(request, response, 200, responseJSON);
-};
-
-// function to add a user from a POST body
-const addUser = (request, response) => {
+const changeName = (request, response) => {
+  console.log("CHANGENAME TRIGGERED");
   // default json message
   const responseJSON = {
-    message: 'Name and age are both required.',
+    message: 'Name and id are both required.',
   };
 
-  // grab name and age out of request.body for convenience
-  // If either name or age do not exist in the request,
-  // they will be set to undefined
-  const { name, age } = request.body;
+  const { name, pokedexNum  } = request.body;
 
-  // check to make sure we have both fields
-  // We might want more validation than just checking if they exist
-  // This could easily be abused with invalid types (such as booleans, numbers, etc)
-  // If either are missing, send back an error message as a 400 badRequest
-  if (!name || !age) {
-    responseJSON.id = 'missingParams';
+
+  // check that we have both required params
+  if (!name || !pokedexNum ) {
+    responseJSON.pokedexNum  = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
 
   // default status code to 204 updated
   let responseCode = 204;
 
-  // If the user doesn't exist yet
-  if (!users[name]) {
-    // Set the status code to 201 (created) and create an empty user
-    responseCode = 201;
-    users[name] = {
-      name: name,
-    };
+  // If the pokemon doesn't exist
+  if (!pokedexData[pokedexNum  - 1]) {
+    responseCode = 404;
+  }
+  else {
+
+    // update pokemons name
+    pokedexData[pokedexNum  - 1].name = name;
   }
 
-  // add or update fields for this user name
-  
-  users[name].age = age;
-
-  // if response is created, then set our created message
-  // and sent response with a message
-  if (responseCode === 201) {
-    responseJSON.message = 'Created Successfully';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  // When we send back a 204 status code, it will not send response
-  // body. However, if we didn't pass in an object as the 4th param
-  // to our respondJSON function it would break. So we send in an
-  // empty object, which will stringify to an empty string.
+  // no response needed, send empty object
   return respondJSON(request, response, responseCode, {});
 };
 
-const getData = (request, response, parsedUrl) =>{
+const getData = (request, response, parsedUrl) => {
   console.log("GET DATA");
   endpointHandlers[parsedUrl.pathname](request, response, parsedUrl);
 };
 
-const getPokemon = (request, response, parsedUrl) =>{
+const getPokemon = (request, response, parsedUrl) => {
   const pokemon = pokedexData[parsedUrl.searchParams.get('pokedexNum') - 1];
 
-    const responseJSON = {
+  const responseJSON = {
     pokemon
   };
 
@@ -108,11 +82,21 @@ const getPokemon = (request, response, parsedUrl) =>{
 
 };
 
-const endpointHandlers = {"/pokedex/getPokemonByNum": getPokemon};
+const getAll = (request, response, parsedUrl) => {
+  const responseJSON = {
+    pokedexData
+  };
+
+  respondJSON(request, response, 200, responseJSON);
+}
+
+const endpointHandlers = {
+  "/pokedex/getPokemonByNum": getPokemon,
+  "/pokedex/getAll": getAll
+};
 
 // public exports
 module.exports = {
-  getUsers,
-  addUser,
+  changeName,
   getData
 };
