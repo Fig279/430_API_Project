@@ -17,5 +17,10 @@
   "bugs": {
     "url": "https://github.com/Fig279/430_API_Project/issues"
   },
-  "homepage": "https://github.com/Fig279/430_API_Project#readme"
+  "homepage": "https://github.com/Fig279/430_API_Project#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0"
+  }
 }

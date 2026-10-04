@@ -1,12 +1,21 @@
+
+const fs = require('fs');
+
+// Load and parse at startup
+const rawData = fs.readFileSync('./pokedex.json', 'utf8');
+const pokedexData = JSON.parse(rawData);
+
 // Note this object is purely in memory
 // When node shuts down this will be cleared.
 // Same when your heroku app shuts down from inactivity
 // We will be working with databases in the next few weeks.
 const users = {};
 
+
 // function to respond with a json object
 // takes request, response, status code and object to send
 const respondJSON = (request, response, status, object) => {
+
   const content = JSON.stringify(object);
   response.writeHead(status, {
     'Content-Type': 'application/json',
@@ -19,7 +28,7 @@ const respondJSON = (request, response, status, object) => {
   if (request.method !== 'HEAD' && status !== 204) {
     response.write(content);
   }
-  
+
   response.end();
 };
 
@@ -83,8 +92,27 @@ const addUser = (request, response) => {
   return respondJSON(request, response, responseCode, {});
 };
 
+const getData = (request, response, parsedUrl) =>{
+  console.log("GET DATA");
+  endpointHandlers[parsedUrl.pathname](request, response, parsedUrl);
+};
+
+const getPokemon = (request, response, parsedUrl) =>{
+  const pokemon = pokedexData[parsedUrl.searchParams.get('pokedexNum') - 1];
+
+    const responseJSON = {
+    pokemon
+  };
+
+  respondJSON(request, response, 200, responseJSON);
+
+};
+
+const endpointHandlers = {"/pokedex/getPokemonByNum": getPokemon};
+
 // public exports
 module.exports = {
   getUsers,
   addUser,
+  getData
 };

@@ -11,7 +11,7 @@
     const handleResponse = async (response) => {
 
       //Grab the content section
-      const content = document.querySelector('#content');
+      const content = document.querySelector('#TestResult');
 
       //Based on the status code, display something
       switch (response.status) {
@@ -34,12 +34,19 @@
 
       //Parse the response to json. This works because we know the server always
       //sends back json. Await because .json() is an async function.
-      const obj = await response.json();
+      const text = await response.text();
+      const obj = text ? JSON.parse(text) : null;
 
       //If we have a message, display it.
-      if (obj.message) {
+      if (obj && obj.message) {
         content.innerHTML += `<p>${obj.message}</p>`;
       }
+
+      // if users were included in this reponse, display them
+      if (obj.pokemon) {
+        content.innerHTML += `<p>${JSON.stringify(obj.pokemon)}</p>`;
+      }
+
     };
 
     //Uses fetch to send a postRequest. Marksed as async because we use await
@@ -76,9 +83,29 @@
       handleResponse(response);
     };
 
+
+    const sendGetOrHead = async (requestForm, endpoint) => {
+
+      // create an object with the search parameters
+      const params = new URLSearchParams(requestForm);
+      const urlWithParams = `${endpoint}?${params.toString()}`;
+
+      // send request
+      formData = JSON.stringify({ requestForm });
+      const response = await fetch(urlWithParams, {
+        method: requestForm.get('method'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': formData.length,
+          'Accept': 'application/json',
+        },
+      });
+
+      handleResponse(response);
+    }
+
     //Init function is called when window.onload runs (set below).
     const init = () => {
-
 
       // subscribe to anysubmit event across the entire document
       document.addEventListener('submit', function (event) {
@@ -94,22 +121,21 @@
           const formData = new FormData(form);
           const selectedMethod = formData.get('method');
 
-          console.log(`Sending ${selectedMethod} request to ${endpoint}`);
+          console.log(`Sending ${formData} request to ${formData.method}`);
 
+          if (selectedMethod == "POST") {
+            console.log("POST");
+
+          }
+          else {
+            sendGetOrHead(formData, endpoint);
+          }
+
+          return false;
         }
       });
 
 
-      //Create an addUser function that cancels the forms default action and
-      //calls our sendPost function above.
-      const addUser = (e) => {
-        e.preventDefault();
-        sendPost(nameForm);
-        return false;
-      }
-
-      //Call addUser when the submit event fires on the form.
-      nameForm.addEventListener('submit', addUser);
     };
 
     //When the window loads, run init.
@@ -123,8 +149,8 @@
 
     <div class="content" style="display:block">
       <div class="content-box">
-        <h3>Endpoint test</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getFilmTitles">
+        <h3>getPokemonByNum</h3>
+        <form data-method="GET" data-endpoint="/pokedex/getPokemonByNum">
           <label>
             <input type="radio" name="method" value="GET" checked>
             " GET"
@@ -132,8 +158,12 @@
           <input type="radio" name="method" value="HEAD">
           " HEAD"
           </label>
+          <label>Pokedex Num: <input type="number" name="pokedexNum" min="1" max="151"></label><br>
+
           <button type="submit">Send Request</button>
         </form>
+        <pre class="result"></pre>
+
       </div>
     </div>
     <div class="content" style="display:block">
@@ -149,10 +179,17 @@
           </label>
           <button type="submit">Send Request</button>
         </form>
+        <pre class="result"></pre>
+
       </div>
     </div>
 
+    <pre id="TestResult">Here</pre>
+
+
   </div>
+
+
 </body>
 
 </html>

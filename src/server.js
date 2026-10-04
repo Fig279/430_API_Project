@@ -1,6 +1,8 @@
 const http = require('http'); // pull in http module
+
 // querystring module for parsing querystrings from url
 const query = require('querystring');
+
 // pull in our custom files
 const htmlHandler = require('./htmlResponses.js');
 const jsonHandler = require('./jsonResponses.js');
@@ -40,38 +42,33 @@ const parseBody = (request, response, handler) => {
   });
 };
 
-// handle POST requests
-const handlePost = (request, response, parsedUrl) => {
-  // If they go to /addUser
-  if (parsedUrl.pathname === '/addUser') {
-    // Call our below parseBody handler, and in turn pass in the
-    // jsonHandler.addUser function as the handler callback function.
-    parseBody(request, response, jsonHandler.addUser);
-  }
-};
 
 // handle GET requests
 const handleGet = (request, response, parsedUrl) => {
+  console.log(`handleGet pathname: ${parsedUrl.pathname}`);
   // route to correct method based on url
   if (parsedUrl.pathname === '/style.css') {
     htmlHandler.getCSS(request, response);
   } else if (parsedUrl.pathname === '/getUsers') {
     jsonHandler.getUsers(request, response);
-  } else {
+  } else if(parsedUrl.pathname.substring(0,8) === '/pokedex'){
+    jsonHandler.getData(request, response, parsedUrl);
+  }
+  
+  else {
     htmlHandler.getIndex(request, response);
   }
 };
 
 const onRequest = (request, response) => {
-  // parse url into individual parts
+
   // returns an object of url parts by name
   const protocol = request.connection.encrypted ? 'https' : 'http';
   const parsedUrl = new URL(request.url, `${protocol}://${request.headers.host}`);
 
-  // check if method was POST, otherwise assume GET
-  // for the sake of this example
+  // check the method
   if (request.method === 'POST') {
-    handlePost(request, response, parsedUrl);
+    //handlePost(request, response, parsedUrl);
   } else {
     handleGet(request, response, parsedUrl);
   }
