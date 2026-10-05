@@ -149,7 +149,7 @@ const getPokemonByWeakness = (request, response, parsedUrl) => {
   for (var i = 0; i < pokedexData.length; i++) {
 
     // if the pokemon has the required type, add them to the dataset
-    if (pokedexData[i]["weaknesses"].includes(typeWeakness)) {
+    if (pokedexData[i]["weaknesses"] && pokedexData[i]["weaknesses"].includes(typeWeakness)) {
       pokemon.push(pokedexData[i]);
     }
   }
@@ -158,7 +158,13 @@ const getPokemonByWeakness = (request, response, parsedUrl) => {
     pokemon
   };
 
-  respondJSON(request, response, 200, responseJSON);
+  if (pokemon.length == 0) {
+    respondJSON(request, response, 404, {});
+  }
+  else {
+    respondJSON(request, response, 200, responseJSON);
+
+  }
 
 };
 
