@@ -10,7 +10,7 @@ footer {
   background-color: #f1f1f1;
   padding: 10px;
   text-align: center;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .mainContent {
@@ -115,4 +115,14 @@ pre.result {
   padding: 10px;
   background-color: #f9f9f9;
   border-radius: 5px;
+}
+
+form label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.method-options label {
+  display: inline;
+  margin-right: 10px;
 }
