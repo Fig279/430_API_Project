@@ -1,135 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Credit: design adapted from project example page -->
 
 <head>
-  <title>Pokedex API</title>
+  <meta charset="utf-8">
+  <title>Pokedex API - Test Page</title>
   <link rel="stylesheet" type="text/css" href="/style.css">
-
   <script>
-    //Handles our FETCH response. This function is async because it
-    //contains an await.
-    const handleResponse = async (response) => {
+    // create an element with optional class and text 
+    const el = (tag, className, text) => {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text) node.textContent = text;
+      return node;
+    };
 
-      //Grab the content section
-      const content = document.querySelector('#TestResult');
+    // creates a card for one pokemon
+    const buildCard = (pokemon) => {
+      const card = el('div', 'card');
+      card.appendChild(el('h4', '', `#${pokemon.num} ${pokemon.name}`));
 
-      //Based on the status code, display something
-      switch (response.status) {
-        case 200: //success
-          content.innerHTML = `<b>Success</b>`;
-          break;
-        case 201: //created
-          content.innerHTML = '<b>Created</b>';
-          break;
-        case 204: //updated (no response back from server)
-          content.innerHTML = '<b>Updated (No Content)</b>';
-          return;
-        case 400: //bad request
-          content.innerHTML = `<b>Bad Request</b>`;
-          break;
-        default: //any other status code
-          content.innerHTML = `Error code not implemented by client.`;
-          break;
+      // used to highlight type of pokemon
+      const chips = el('div', 'chips');
+      pokemon.type.forEach((type) => chips.appendChild(el('span', 'chip', type)));
+      card.appendChild(chips);
+
+      card.appendChild(el('p', '', `Height: ${pokemon.height || 'unknown'} | Weight: ${pokemon.weight || 'unknown'}`));
+      if (pokemon.weaknesses.length > 0) {
+        card.appendChild(el('p', '', `Weak to: ${pokemon.weaknesses.join(', ')}`));
+      }
+      if (pokemon.next_evolution) {
+        card.appendChild(el('p', '', `Evolves into: ${pokemon.next_evolution.map((evo) => evo.name).join(', ')}`));
       }
 
-      //Parse the response to json. This works because we know the server always
-      //sends back json. Await because .json() is an async function.
-      const text = await response.text();
-      const obj = text ? JSON.parse(text) : null;
+      return card;
+    };
 
-      if (!obj) {
+    // shows the status and the results
+    const showResult = async (response, resultBox, method) => {
+      resultBox.replaceChildren();
+
+      const statusText = `${response.status} ${response.statusText}`.trim();
+      resultBox.appendChild(el('p', '', `Status: ${statusText}`));
+
+      // HEAD responses have no body
+      if (method === 'HEAD') {
+        const headers = `Content-Type: ${response.headers.get('Content-Type')} | Content-Length: ${response.headers.get('Content-Length')}`;
+        resultBox.appendChild(el('p', '', headers));
         return;
       }
-      //If we have a message, display it.
-      if (obj.message) {
-        content.innerHTML += `<p>${obj.message}</p>`;
+
+      // check if there is any content to show
+      const text = await response.text();
+      if (!text) {
+        resultBox.appendChild(el('p', '', 'No content was returned. This is normal for a 204 response.'));
+        return;
       }
 
+      const data = JSON.parse(text);
+      if (data.message) {
+        resultBox.appendChild(el('p', '', data.message));
+      }
 
-      // format output to be more readable
-      content.innerHTML += `<pre>${JSON.stringify(obj, null, 2)}</pre>`;
-
-
+      // pokemon is an array for lists and an object for a single pokemon
+      const cards = el('div', 'cards');
+      [].concat(data.pokemon || []).forEach((pokemon) => cards.appendChild(buildCard(pokemon)));
+      resultBox.appendChild(cards);
     };
 
-    //Uses fetch to send a postRequest. Marksed as async because we use await
-    //within it.
-    const sendPost = async (requestForm, endpoint) => {
+    // creates fetch request from the form's inputs and sends it
+    const sendRequest = async (form) => {
+      const resultBox = form.parentElement.querySelector('.result');
+      const formData = new FormData(form);
 
-      // create an object with the search parameters
-      const formData = new URLSearchParams(requestForm).toString();
-      const dataType = 'application/x-www-form-urlencoded';
-      //const method = requestForm.getAttribute('method');
+      // check for method selection
+      const method = formData.get('method') || form.dataset.method;
+      formData.delete('method');
 
-      //Make a fetch request and await a response
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          'Content-Type': dataType,
-          'Content-Length': formData.length,
-          'Accept': 'application/json',
-        },
-        body: formData,
-      });
-      console.log(response);
-
-      //Once we have a response, handle it.
-      handleResponse(response);
-    };
-
-
-    const sendGetOrHead = async (requestForm, endpoint) => {
-
-      // create an object with the search parameters
-      const params = new URLSearchParams(requestForm);
-      const urlWithParams = `${endpoint}?${params.toString()}`;
-
-      // send request
-      formData = JSON.stringify({ requestForm });
-      const response = await fetch(urlWithParams, {
-        method: requestForm.get('method'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': formData.length,
-          'Accept': 'application/json',
-        },
-      });
-
-      handleResponse(response);
-    }
-
-    //Init function is called when window.onload runs (set below).
-    const init = () => {
-
-      // subscribe to anysubmit event across the entire document
-      document.addEventListener('submit', function (event) {
-        // check if the event is from an endpoint form
-        const form = event.target;
-
-        if (form.hasAttribute('data-endpoint')) {
-          event.preventDefault();
-
-          // get necessary request parameters
-          const endpoint = form.getAttribute('data-endpoint');
-
-          const formData = new FormData(form);
-          const selectedMethod = form.getAttribute('data-method');
-
-          console.log(`Sending ${formData} request to ${selectedMethod}`);
-
-          if (selectedMethod == "POST") {
-            sendPost(formData, endpoint);
-
-          }
-          else {
-            sendGetOrHead(formData, endpoint);
-          }
-
-          return false;
+      // only send fields that were filled 
+      const fields = new URLSearchParams();
+      formData.forEach((value, key) => {
+        if (value.trim() !== '') {
+          fields.append(key, value.trim());
         }
       });
 
+      let url = form.dataset.endpoint;
+      const options = { method, headers: { Accept: 'application/json' } };
 
+      // post
+      if (method === 'POST') {
+        if (form.dataset.format === 'json') {
+          options.headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(Object.fromEntries(fields));
+        } else {
+          options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+          options.body = fields.toString();
+        }
+      } else if (fields.toString()) {
+        // add in query params
+        url += `?${fields.toString()}`;
+      }
+
+      try {
+        const response = await fetch(url, options);
+        await showResult(response, resultBox, method);
+      } catch (err) {
+        resultBox.textContent = 'Could not reach the server.';
+      }
+    };
+
+    // shows / hides the test block under a clicked header
+    const toggleBlock = (event) => {
+      const header = event.target.closest('.collapsible');
+
+      if (header) {
+        const content = header.nextElementSibling;
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        header.classList.toggle('open');
+      }
+    };
+
+    const init = () => {
+      // open and close the test blocks
+      document.addEventListener('click', toggleBlock);
+
+      // subscribe to any submit event across the entire document
+      document.addEventListener('submit', (event) => {
+        const form = event.target;
+
+        // check if the event is from an endpoint form
+        if (form.dataset.endpoint) {
+          event.preventDefault();
+          sendRequest(form);
+        }
+      });
     };
 
     //When the window loads, run init.
@@ -138,171 +143,176 @@
 </head>
 
 <body>
-  <div id="mainContent">
-    <h1>Test Application</h1>
+  <nav>
+    <a href="/" class="current">Test Page</a>
+    <a href="/docs.html">API Documentation</a>
+  </nav>
+  <div class="mainContent">
+    <h1>Pokedex API Test Page</h1>
+    <p>Click an endpoint to expand it, then send requests.</p>
 
-    <div class="content" style="display:block">
-      <div class="content-box">
-        <h3>getPokemonByNum</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getPokemonByNum">
-          <label>
-            <input type="radio" name="method" value="GET" checked>
-            " GET"
-          </label>
-          <input type="radio" name="method" value="HEAD">
-          " HEAD"
-          </label>
-          <label>Pokedex Num: <input type="number" name="pokedexNum" min="1" max="151"></label><br>
-
-          <button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
-
-      </div>
-    </div>
-    <div class="content" style="display:block">
-      <div class="content-box">
-        <h3>Get all</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getAll">
-          <label>
-            <input type="radio" name="method" value="GET" checked>
-            " GET"
-          </label>
-          <input type="radio" name="method" value="HEAD">
-          " HEAD"
-          </label>
-          <button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
-
-      </div>
-    </div>
-    <div class="content" style="display:block">
-      <div class="content-box">
-        <h3>Get pokemon by type</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getPokemonByType">
-          <label>
-            <input type="radio" name="method" value="GET" checked>
-            " GET"
-          </label>
-          <input type="radio" name="method" value="HEAD">
-          " HEAD"
-          </label><br>
-          <label for="fruit">Choose a type:</label>
-          <select id="pokemonType" name="pokemonType">
-            <option value="Normal">Normal</option>
-            <option value="Fire">Fire</option>
-            <option value="Water">Water</option>
-            <option value="Grass">Grass</option>
-            <option value="Electric">Electric</option>
-            <option value="Ice">Ice</option>
-            <option value="Fighting">Fighting</option>
-            <option value="Poison">Poison</option>
-            <option value="Ground">Ground</option>
-            <option value="Flying">Flying</option>
-            <option value="Psychic">Psychic</option>
-            <option value="Bug">Bug</option>
-            <option value="Rock">Rock</option>
-            <option value="Ghost">Ghost</option>
-            <option value="Dragon">Dragon</option>
-            <option value="Dark">Dark</option>
-            <option value="Steel">Steel</option>
-            <option value="Fairy">Fairy</option>
-          </select>
-          <br><button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
-
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getAll</div>
+      <div class="content">
+        <div class="content-box">
+          <form data-method="GET" data-endpoint="/pokedex/getAll" novalidate>
+            <div class="method-options">
+              <label><input type="radio" name="method" value="GET" checked> GET</label>
+              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
+            </div>
+            <label>Limit: <input type="number" name="limit" min="0"></label>
+            <label>Offset: <input type="number" name="offset" min="0"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
       </div>
     </div>
 
-    <div class="content" style="display:block">
-      <div class="content-box">
-        <h3>Get pokemon by weakness</h3>
-        <form data-method="GET" data-endpoint="/pokedex/getPokemonByWeakness">
-          <label>
-            <input type="radio" name="method" value="GET" checked>
-            " GET"
-          </label>
-          <input type="radio" name="method" value="HEAD">
-          " HEAD"
-          </label><br>
-          <label for="pokemonType">Choose a type:</label>
-          <select id="pokemonType" name="pokemonType">
-            <option value="Normal">Normal</option>
-            <option value="Fire">Fire</option>
-            <option value="Water">Water</option>
-            <option value="Grass">Grass</option>
-            <option value="Electric">Electric</option>
-            <option value="Ice">Ice</option>
-            <option value="Fighting">Fighting</option>
-            <option value="Poison">Poison</option>
-            <option value="Ground">Ground</option>
-            <option value="Flying">Flying</option>
-            <option value="Psychic">Psychic</option>
-            <option value="Bug">Bug</option>
-            <option value="Rock">Rock</option>
-            <option value="Ghost">Ghost</option>
-            <option value="Dragon">Dragon</option>
-            <option value="Dark">Dark</option>
-            <option value="Steel">Steel</option>
-            <option value="Fairy">Fairy</option>
-          </select>
-          <br><button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
-
-      </div>
-    </div>
-    <div class="content" style="display:block">
-
-      <div class="content-box">
-        <h3>changePokemonName</h3>
-        <form data-method="POST" data-endpoint="/pokedex/changePokemonName">
-          <label>Pokedex Num: <input type="number" name="pokedexNum" min="1" max="151"></label><br>
-          <label>New Name: <input type="text" name="name"></label><br>
-          <button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByNum</div>
+      <div class="content">
+        <div class="content-box">
+          <form data-method="GET" data-endpoint="/pokedex/getPokemonByNum" novalidate>
+            <div class="method-options">
+              <label><input type="radio" name="method" value="GET" checked> GET</label>
+              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
+            </div>
+            <label>Pokedex Num: <input type="number" name="pokedexNum" min="1"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
       </div>
     </div>
 
-    <div class="content" style="display:block">
-
-      <div class="content-box">
-        <h3>addPokemon</h3>
-        <form data-method="POST" data-endpoint="/pokedex/addPokemon">
-          <label>Name: <input type="text" name="name"></label><br>
-          <label for="pokemonType">Choose a type:</label>
-          <select id="pokemonType" name="pokemonType">
-            <option value="Normal">Normal</option>
-            <option value="Fire">Fire</option>
-            <option value="Water">Water</option>
-            <option value="Grass">Grass</option>
-            <option value="Electric">Electric</option>
-            <option value="Ice">Ice</option>
-            <option value="Fighting">Fighting</option>
-            <option value="Poison">Poison</option>
-            <option value="Ground">Ground</option>
-            <option value="Flying">Flying</option>
-            <option value="Psychic">Psychic</option>
-            <option value="Bug">Bug</option>
-            <option value="Rock">Rock</option>
-            <option value="Ghost">Ghost</option>
-            <option value="Dragon">Dragon</option>
-            <option value="Dark">Dark</option>
-            <option value="Steel">Steel</option>
-            <option value="Fairy">Fairy</option>
-          </select>
-          <button type="submit">Send Request</button>
-        </form>
-        <pre class="result"></pre>
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByType</div>
+      <div class="content">
+        <div class="content-box">
+          <form data-method="GET" data-endpoint="/pokedex/getPokemonByType" novalidate>
+            <div class="method-options">
+              <label><input type="radio" name="method" value="GET" checked> GET</label>
+              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
+            </div>
+            <label>Choose a type: <select name="pokemonType">
+                <option value="Bug">Bug</option>
+                <option value="Dark">Dark</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Electric">Electric</option>
+                <option value="Fairy">Fairy</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Fire">Fire</option>
+                <option value="Flying">Flying</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Grass">Grass</option>
+                <option value="Ground">Ground</option>
+                <option value="Ice">Ice</option>
+                <option value="Normal">Normal</option>
+                <option value="Poison">Poison</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Rock">Rock</option>
+                <option value="Steel">Steel</option>
+                <option value="Water">Water</option>
+              </select></label>
+            <label>Limit: <input type="number" name="limit" min="0"></label>
+            <label>Offset: <input type="number" name="offset" min="0"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
       </div>
     </div>
 
-    <pre id="TestResult">Here</pre>
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByWeakness</div>
+      <div class="content">
+        <div class="content-box">
+          <form data-method="GET" data-endpoint="/pokedex/getPokemonByWeakness" novalidate>
+            <div class="method-options">
+              <label><input type="radio" name="method" value="GET" checked> GET</label>
+              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
+            </div>
+            <label>Choose a type: <select name="pokemonType">
+                <option value="Bug">Bug</option>
+                <option value="Dark">Dark</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Electric">Electric</option>
+                <option value="Fairy">Fairy</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Fire">Fire</option>
+                <option value="Flying">Flying</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Grass">Grass</option>
+                <option value="Ground">Ground</option>
+                <option value="Ice">Ice</option>
+                <option value="Normal">Normal</option>
+                <option value="Poison">Poison</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Rock">Rock</option>
+                <option value="Steel">Steel</option>
+                <option value="Water">Water</option>
+              </select></label>
+            <label>Limit: <input type="number" name="limit" min="0"></label>
+            <label>Offset: <input type="number" name="offset" min="0"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">POST /pokedex/addPokemon</div>
+      <div class="content">
+        <div class="content-box">
+          <form data-method="POST" data-format="json" data-endpoint="/pokedex/addPokemon" novalidate>
+            <label>Name: <input type="text" name="name"></label>
+            <label>Type: <select name="pokemonType">
+                <option value="Bug">Bug</option>
+                <option value="Dark">Dark</option>
+                <option value="Dragon">Dragon</option>
+                <option value="Electric">Electric</option>
+                <option value="Fairy">Fairy</option>
+                <option value="Fighting">Fighting</option>
+                <option value="Fire">Fire</option>
+                <option value="Flying">Flying</option>
+                <option value="Ghost">Ghost</option>
+                <option value="Grass">Grass</option>
+                <option value="Ground">Ground</option>
+                <option value="Ice">Ice</option>
+                <option value="Normal">Normal</option>
+                <option value="Poison">Poison</option>
+                <option value="Psychic">Psychic</option>
+                <option value="Rock">Rock</option>
+                <option value="Steel">Steel</option>
+                <option value="Water">Water</option>
+              </select></label>
+            <label>Image URL (optional): <input type="text" name="img"></label>
+            <label>Height (optional): <input type="text" name="height"></label>
+            <label>Weight (optional): <input type="text" name="weight"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">POST /pokedex/changePokemonName</div>
+      <div class="content">
+        <div class="content-box">
+          <p class="note">This form sends its data as application/x-www-form-urlencoded.</p>
+          <form data-method="POST" data-format="form" data-endpoint="/pokedex/changePokemonName" novalidate>
+            <label>Pokedex Num: <input type="number" name="pokedexNum" min="1"></label>
+            <label>New Name: <input type="text" name="name"></label>
+            <button type="submit">Send Request</button>
+          </form>
+          <div class="result"></div>
+        </div>
+      </div>
+    </div>
   </div>
-
 
 </body>
 
