@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Pokedex API - Documentation</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  <script src="/docs.js"></script>
+</head>
+
+<body>
+  <nav>
+    <a href="/">Test Page</a>
+    <a href="/docs.html" class="current">API Documentation</a>
+  </nav>
+  <div class="mainContent">
+    <h1>Pokedex API Documentation</h1>
+    <p>These are the endpoints for my Pokedex API. Click one to see how to use it.</p>
+
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getAll</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/getAll</p>
+          <p>Methods: GET, HEAD</p>
+          <div class="param">
+            <h4>Query params</h4>
+            <ul>
+              <li>limit (number, optional)</li>
+              <li>offset (number, optional)</li>
+            </ul>
+          </div>
+          <p>Returns: JSON with total, count and an array of pokemon. Sends a 400 if limit or offset is not a number.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">GET /pokedex/getAll?limit=2</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">200 OK
+{ "total": 151, "count": 2, "pokemon": [ { "id": 1, "name": "Bulbasaur", ... }, { "id": 2, "name": "Ivysaur", ... } ] }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByNum</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/getPokemonByNum</p>
+          <p>Methods: GET, HEAD</p>
+          <div class="param">
+            <h4>Query params</h4>
+            <ul>
+              <li>pokedexNum (number, required)</li>
+            </ul>
+          </div>
+          <p>Returns: JSON with one pokemon object. Sends a 400 if pokedexNum is missing or not a number, and a 404 if there is no pokemon with that number.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">GET /pokedex/getPokemonByNum?pokedexNum=25</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">200 OK
+{ "pokemon": { "id": 25, "name": "Pikachu", "type": ["Electric"], ... } }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByType</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/getPokemonByType</p>
+          <p>Methods: GET, HEAD</p>
+          <div class="param">
+            <h4>Query params</h4>
+            <ul>
+              <li>pokemonType (string, required)</li>
+              <li>limit (number, optional)</li>
+              <li>offset (number, optional)</li>
+            </ul>
+          </div>
+          <p>Returns: JSON with total, count and an array of the pokemon that have that type. Sends a 400 if pokemonType is missing or not a real type.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">GET /pokedex/getPokemonByType?pokemonType=Dragon</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">200 OK
+{ "total": 3, "count": 3, "pokemon": [ { "name": "Dratini", ... }, { "name": "Dragonair", ... }, { "name": "Dragonite", ... } ] }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">GET, HEAD /pokedex/getPokemonByWeakness</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/getPokemonByWeakness</p>
+          <p>Methods: GET, HEAD</p>
+          <div class="param">
+            <h4>Query params</h4>
+            <ul>
+              <li>pokemonType (string, required)</li>
+              <li>limit (number, optional)</li>
+              <li>offset (number, optional)</li>
+            </ul>
+          </div>
+          <p>Returns: JSON with total, count and an array of the pokemon that are weak to that type. Sends a 400 if pokemonType is missing or not a real type.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">GET /pokedex/getPokemonByWeakness?pokemonType=Fairy&limit=1</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">200 OK
+{ "total": 11, "count": 1, "pokemon": [ { "name": "Mankey", ... } ] }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">POST /pokedex/addPokemon</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/addPokemon</p>
+          <p>Methods: POST</p>
+          <div class="param">
+            <h4>Body params</h4>
+            <ul>
+              <li>name (string, required)</li>
+              <li>pokemonType (string, required)</li>
+              <li>img (string, optional)</li>
+              <li>height (string, optional)</li>
+              <li>weight (string, optional)</li>
+            </ul>
+          </div>
+          <p>Returns: The body can be JSON or x-www-form-urlencoded. Sends back a 201 with a message and the new pokemon. Sends a 400 if something is missing or invalid.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">POST /pokedex/addPokemon
+Content-Type: application/json
+
+{ "name": "Fuecoco", "pokemonType": "Fire" }</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">201 Created
+{ "message": "Created Successfully", "pokemon": { "id": 152, "name": "Fuecoco", "type": ["Fire"], ... } }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="collapsible">POST /pokedex/changePokemonName</div>
+      <div class="content">
+        <div class="content-box">
+          <p>URL: /pokedex/changePokemonName</p>
+          <p>Methods: POST</p>
+          <div class="param">
+            <h4>Body params</h4>
+            <ul>
+              <li>pokedexNum (number, required)</li>
+              <li>name (string, required)</li>
+            </ul>
+          </div>
+          <p>Returns: The body can be JSON or x-www-form-urlencoded. Sends back a 204 with nothing in the body. Sends a 404 if the pokemon does not exist, or a 400 if something is missing or invalid.</p>
+          <div class="example">
+            <p>Example request:</p>
+            <pre class="inline-code">POST /pokedex/changePokemonName
+Content-Type: application/x-www-form-urlencoded
+
+pokedexNum=25&name=Pika</pre>
+            <p>Example response:</p>
+            <pre class="inline-code">204 No Content</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

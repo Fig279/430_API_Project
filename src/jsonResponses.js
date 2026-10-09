@@ -5,10 +5,6 @@ const path = require('path');
 const rawData = fs.readFileSync(path.join(__dirname, '..', 'pokedex.json'), 'utf8');
 const pokedexData = JSON.parse(rawData);
 
-// all existing pokemon types
-const validTypes = ['Bug', 'Dark', 'Dragon', 'Electric', 'Fairy', 'Fighting', 'Fire', 'Flying', 'Ghost',
-  'Grass', 'Ground', 'Ice', 'Normal', 'Poison', 'Psychic', 'Rock', 'Steel', 'Water'];
-
 // function to respond with a json object
 // takes request, response, status code and object to send
 // Credit: adapted from class example code
