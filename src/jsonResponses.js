@@ -28,8 +28,9 @@ const respondError = (request, response, status, id, message) => {
   respondJSON(request, response, status, { id, message });
 };
 
+// easy response call for when a piece of data doesn't exist
 const notFound = (request, response) => {
-  respondError(request, response, 404, 'notFound', 'The page or endpoint you requested was not found.');
+  respondError(request, response, 404, 'notFound', 'The endpoint you requested was not found');
 };
 
 // sends the pokemon that pass the filter, using limit and offset from the url
@@ -46,10 +47,13 @@ const sendList = (request, response, parsedUrl, filter) => {
   return respondJSON(request, response, 200, { total: list.length, count: pokemon.length, pokemon });
 };
 
+// send all pokemon from the dataset, unfiltered
+// assumes all pokemon pass any filters
 const getAll = (request, response, parsedUrl) => {
   sendList(request, response, parsedUrl, () => true);
 };
 
+// finds a pokemon by its id / pokedex number
 const getPokemonByID = (request, response, parsedUrl) => {
   const pokedexNum = parsedUrl.searchParams.get('pokedexNum');
 
@@ -76,14 +80,17 @@ const getByTypeField = (request, response, parsedUrl, field) => {
   return sendList(request, response, parsedUrl, (pokemon) => pokemon[field].includes(type));
 };
 
+// uses a pokemon type to filter through pokemon
 const getPokemonByType = (request, response, parsedUrl) => {
   getByTypeField(request, response, parsedUrl, 'type');
 };
 
+// uses a pokemon type weakness to filter through pokemon
 const getPokemonByWeakness = (request, response, parsedUrl) => {
   getByTypeField(request, response, parsedUrl, 'weaknesses');
 };
 
+// find a pokemon by number and changes its name
 const changeName = (request, response) => {
   const { pokedexNum, name } = request.body;
 
@@ -103,6 +110,7 @@ const changeName = (request, response) => {
   return respondJSON(request, response, 204, {});
 };
 
+// creates a new pokedex entry at the end of all the data
 const addPokemon = (request, response) => {
   const {
     name, pokemonType, img, height, weight,

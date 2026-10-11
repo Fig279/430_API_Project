@@ -1,13 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <!-- Credit: design adapted from project example page -->
+
 
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Pokedex API - Test Page</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
   <link rel="stylesheet" type="text/css" href="/style.css">
   <script>
-    // create an element with optional class and text 
+    // Creates an element with optional class and text (textContent keeps user data safe)
     const el = (tag, className, text) => {
       const node = document.createElement(tag);
       if (className) node.className = className;
@@ -15,42 +19,44 @@
       return node;
     };
 
-    // creates a card for one pokemon
+    // Builds a card showing one pokemon
     const buildCard = (pokemon) => {
+      const column = el('div', 'column is-one-third');
       const card = el('div', 'card');
-      card.appendChild(el('h4', '', `#${pokemon.num} ${pokemon.name}`));
+      const content = el('div', 'card-content');
+      content.appendChild(el('p', 'title is-5', `#${pokemon.num} ${pokemon.name}`));
 
-      // used to highlight type of pokemon
-      const chips = el('div', 'chips');
-      pokemon.type.forEach((type) => chips.appendChild(el('span', 'chip', type)));
-      card.appendChild(chips);
+      const tags = el('div', 'tags');
+      pokemon.type.forEach((type) => tags.appendChild(el('span', 'tag is-info is-light', type)));
+      content.appendChild(tags);
 
-      card.appendChild(el('p', '', `Height: ${pokemon.height || 'unknown'} | Weight: ${pokemon.weight || 'unknown'}`));
+      content.appendChild(el('p', 'is-size-7', `Height: ${pokemon.height || 'unknown'} | Weight: ${pokemon.weight || 'unknown'}`));
       if (pokemon.weaknesses.length > 0) {
-        card.appendChild(el('p', '', `Weak to: ${pokemon.weaknesses.join(', ')}`));
+        content.appendChild(el('p', 'is-size-7', `Weak to: ${pokemon.weaknesses.join(', ')}`));
       }
       if (pokemon.next_evolution) {
-        card.appendChild(el('p', '', `Evolves into: ${pokemon.next_evolution.map((evo) => evo.name).join(', ')}`));
+        content.appendChild(el('p', 'is-size-7', `Evolves into: ${pokemon.next_evolution.map((evo) => evo.name).join(', ')}`));
       }
 
-      return card;
+      card.appendChild(content);
+      column.appendChild(card);
+      return column;
     };
 
-    // shows the status and the results
+    // Shows the status and the results under the form that sent the request
     const showResult = async (response, resultBox, method) => {
       resultBox.replaceChildren();
 
       const statusText = `${response.status} ${response.statusText}`.trim();
-      resultBox.appendChild(el('p', '', `Status: ${statusText}`));
+      resultBox.appendChild(el('p', 'has-text-weight-bold', `Status: ${statusText}`));
 
-      // HEAD responses have no body
+      // HEAD responses have no body, so show the headers instead
       if (method === 'HEAD') {
         const headers = `Content-Type: ${response.headers.get('Content-Type')} | Content-Length: ${response.headers.get('Content-Length')}`;
         resultBox.appendChild(el('p', '', headers));
         return;
       }
 
-      // check if there is any content to show
       const text = await response.text();
       if (!text) {
         resultBox.appendChild(el('p', '', 'No content was returned. This is normal for a 204 response.'));
@@ -63,21 +69,21 @@
       }
 
       // pokemon is an array for lists and an object for a single pokemon
-      const cards = el('div', 'cards');
+      const cards = el('div', 'columns is-multiline mt-2');
       [].concat(data.pokemon || []).forEach((pokemon) => cards.appendChild(buildCard(pokemon)));
       resultBox.appendChild(cards);
     };
 
-    // creates fetch request from the form's inputs and sends it
+    // Builds a fetch request from the form's inputs and sends it
     const sendRequest = async (form) => {
       const resultBox = form.parentElement.querySelector('.result');
       const formData = new FormData(form);
 
-      // check for method selection
+      // GET forms have radio buttons to choose GET or HEAD
       const method = formData.get('method') || form.dataset.method;
       formData.delete('method');
 
-      // only send fields that were filled 
+      // only send fields that were filled in
       const fields = new URLSearchParams();
       formData.forEach((value, key) => {
         if (value.trim() !== '') {
@@ -88,7 +94,6 @@
       let url = form.dataset.endpoint;
       const options = { method, headers: { Accept: 'application/json' } };
 
-      // post
       if (method === 'POST') {
         if (form.dataset.format === 'json') {
           options.headers['Content-Type'] = 'application/json';
@@ -98,29 +103,28 @@
           options.body = fields.toString();
         }
       } else if (fields.toString()) {
-        // add in query params
         url += `?${fields.toString()}`;
       }
 
       try {
         const response = await fetch(url, options);
         await showResult(response, resultBox, method);
-      } catch (err) {
+      } catch {
         resultBox.textContent = 'Could not reach the server.';
       }
     };
 
-    // shows / hides the test block under a clicked header
+    // Shows or hides the test block under a clicked header
     const toggleBlock = (event) => {
       const header = event.target.closest('.collapsible');
 
       if (header) {
-        const content = header.nextElementSibling;
-        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        header.nextElementSibling.classList.toggle('is-hidden');
         header.classList.toggle('open');
       }
     };
 
+    //Init function is called when window.onload runs (set below).
     const init = () => {
       // open and close the test blocks
       document.addEventListener('click', toggleBlock);
@@ -143,177 +147,258 @@
 </head>
 
 <body>
-  <nav>
-    <a href="/" class="current">Test Page</a>
-    <a href="/docs.html">API Documentation</a>
+  <nav class="navbar is-light" aria-label="main navigation">
+    <div class="navbar-menu is-active">
+      <div class="navbar-start">
+        <a class="navbar-item is-active" href="/">Test Page</a>
+        <a class="navbar-item" href="/docs.html">API Documentation</a>
+      </div>
+    </div>
   </nav>
-  <div class="mainContent">
-    <h1>Pokedex API Test Page</h1>
-    <p>Click an endpoint to expand it, then send requests.</p>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Pokedex API Test Page</h1>
+      <p class="subtitle">Click an endpoint to expand it, then send requests.</p>
 
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getAll</div>
-      <div class="content">
-        <div class="content-box">
-          <form data-method="GET" data-endpoint="/pokedex/getAll" novalidate>
-            <div class="method-options">
-              <label><input type="radio" name="method" value="GET" checked> GET</label>
-              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
-            </div>
-            <label>Limit: <input type="number" name="limit" min="0"></label>
-            <label>Offset: <input type="number" name="offset" min="0"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getAll</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <form data-method="GET" data-endpoint="/pokedex/getAll" novalidate>
+              <div class="field">
+                <div class="control">
+                  <label class="radio"><input type="radio" name="method" value="GET" checked> GET</label>
+                  <label class="radio"><input type="radio" name="method" value="HEAD"> HEAD</label>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Limit</label>
+                <div class="control"><input class="input" type="number" name="limit" min="0"></div>
+              </div>
+              <div class="field">
+                <label class="label">Offset</label>
+                <div class="control"><input class="input" type="number" name="offset" min="0"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByNum</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <form data-method="GET" data-endpoint="/pokedex/getPokemonByNum" novalidate>
+              <div class="field">
+                <div class="control">
+                  <label class="radio"><input type="radio" name="method" value="GET" checked> GET</label>
+                  <label class="radio"><input type="radio" name="method" value="HEAD"> HEAD</label>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Pokedex Num</label>
+                <div class="control"><input class="input" type="number" name="pokedexNum" min="1"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByType</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <form data-method="GET" data-endpoint="/pokedex/getPokemonByType" novalidate>
+              <div class="field">
+                <div class="control">
+                  <label class="radio"><input type="radio" name="method" value="GET" checked> GET</label>
+                  <label class="radio"><input type="radio" name="method" value="HEAD"> HEAD</label>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Choose a type</label>
+                <div class="control">
+                  <div class="select">
+                    <select name="pokemonType">
+                    <option value="Bug">Bug</option>
+                    <option value="Dark">Dark</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Fairy">Fairy</option>
+                    <option value="Fighting">Fighting</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Flying">Flying</option>
+                    <option value="Ghost">Ghost</option>
+                    <option value="Grass">Grass</option>
+                    <option value="Ground">Ground</option>
+                    <option value="Ice">Ice</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Poison">Poison</option>
+                    <option value="Psychic">Psychic</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Steel">Steel</option>
+                    <option value="Water">Water</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Limit</label>
+                <div class="control"><input class="input" type="number" name="limit" min="0"></div>
+              </div>
+              <div class="field">
+                <label class="label">Offset</label>
+                <div class="control"><input class="input" type="number" name="offset" min="0"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByWeakness</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <form data-method="GET" data-endpoint="/pokedex/getPokemonByWeakness" novalidate>
+              <div class="field">
+                <div class="control">
+                  <label class="radio"><input type="radio" name="method" value="GET" checked> GET</label>
+                  <label class="radio"><input type="radio" name="method" value="HEAD"> HEAD</label>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Choose a type</label>
+                <div class="control">
+                  <div class="select">
+                    <select name="pokemonType">
+                    <option value="Bug">Bug</option>
+                    <option value="Dark">Dark</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Fairy">Fairy</option>
+                    <option value="Fighting">Fighting</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Flying">Flying</option>
+                    <option value="Ghost">Ghost</option>
+                    <option value="Grass">Grass</option>
+                    <option value="Ground">Ground</option>
+                    <option value="Ice">Ice</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Poison">Poison</option>
+                    <option value="Psychic">Psychic</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Steel">Steel</option>
+                    <option value="Water">Water</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Limit</label>
+                <div class="control"><input class="input" type="number" name="limit" min="0"></div>
+              </div>
+              <div class="field">
+                <label class="label">Offset</label>
+                <div class="control"><input class="input" type="number" name="offset" min="0"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>POST /pokedex/addPokemon</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p class="is-size-7 has-text-grey mb-3">This form sends its data as application/json.</p>
+            <form data-method="POST" data-format="json" data-endpoint="/pokedex/addPokemon" novalidate>
+              <div class="field">
+                <label class="label">Name</label>
+                <div class="control"><input class="input" type="text" name="name"></div>
+              </div>
+              <div class="field">
+                <label class="label">Type</label>
+                <div class="control">
+                  <div class="select">
+                    <select name="pokemonType">
+                    <option value="Bug">Bug</option>
+                    <option value="Dark">Dark</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Fairy">Fairy</option>
+                    <option value="Fighting">Fighting</option>
+                    <option value="Fire">Fire</option>
+                    <option value="Flying">Flying</option>
+                    <option value="Ghost">Ghost</option>
+                    <option value="Grass">Grass</option>
+                    <option value="Ground">Ground</option>
+                    <option value="Ice">Ice</option>
+                    <option value="Normal">Normal</option>
+                    <option value="Poison">Poison</option>
+                    <option value="Psychic">Psychic</option>
+                    <option value="Rock">Rock</option>
+                    <option value="Steel">Steel</option>
+                    <option value="Water">Water</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Image URL (optional)</label>
+                <div class="control"><input class="input" type="text" name="img"></div>
+              </div>
+              <div class="field">
+                <label class="label">Height (optional)</label>
+                <div class="control"><input class="input" type="text" name="height" placeholder="0.71 m"></div>
+              </div>
+              <div class="field">
+                <label class="label">Weight (optional)</label>
+                <div class="control"><input class="input" type="text" name="weight" placeholder="6.9 kg"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>POST /pokedex/changePokemonName</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p class="is-size-7 has-text-grey mb-3">This form sends its data as application/x-www-form-urlencoded.</p>
+            <form data-method="POST" data-format="form" data-endpoint="/pokedex/changePokemonName" novalidate>
+              <div class="field">
+                <label class="label">Pokedex Num</label>
+                <div class="control"><input class="input" type="number" name="pokedexNum" min="1"></div>
+              </div>
+              <div class="field">
+                <label class="label">New Name</label>
+                <div class="control"><input class="input" type="text" name="name"></div>
+              </div>
+              <div class="field">
+                <div class="control"><button class="button is-light" type="submit">Send Request</button></div>
+              </div>
+            </form>
+            <div class="result mt-4"></div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByNum</div>
-      <div class="content">
-        <div class="content-box">
-          <form data-method="GET" data-endpoint="/pokedex/getPokemonByNum" novalidate>
-            <div class="method-options">
-              <label><input type="radio" name="method" value="GET" checked> GET</label>
-              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
-            </div>
-            <label>Pokedex Num: <input type="number" name="pokedexNum" min="1"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByType</div>
-      <div class="content">
-        <div class="content-box">
-          <form data-method="GET" data-endpoint="/pokedex/getPokemonByType" novalidate>
-            <div class="method-options">
-              <label><input type="radio" name="method" value="GET" checked> GET</label>
-              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
-            </div>
-            <label>Choose a type: <select name="pokemonType">
-                <option value="Bug">Bug</option>
-                <option value="Dark">Dark</option>
-                <option value="Dragon">Dragon</option>
-                <option value="Electric">Electric</option>
-                <option value="Fairy">Fairy</option>
-                <option value="Fighting">Fighting</option>
-                <option value="Fire">Fire</option>
-                <option value="Flying">Flying</option>
-                <option value="Ghost">Ghost</option>
-                <option value="Grass">Grass</option>
-                <option value="Ground">Ground</option>
-                <option value="Ice">Ice</option>
-                <option value="Normal">Normal</option>
-                <option value="Poison">Poison</option>
-                <option value="Psychic">Psychic</option>
-                <option value="Rock">Rock</option>
-                <option value="Steel">Steel</option>
-                <option value="Water">Water</option>
-              </select></label>
-            <label>Limit: <input type="number" name="limit" min="0"></label>
-            <label>Offset: <input type="number" name="offset" min="0"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByWeakness</div>
-      <div class="content">
-        <div class="content-box">
-          <form data-method="GET" data-endpoint="/pokedex/getPokemonByWeakness" novalidate>
-            <div class="method-options">
-              <label><input type="radio" name="method" value="GET" checked> GET</label>
-              <label><input type="radio" name="method" value="HEAD"> HEAD</label>
-            </div>
-            <label>Choose a type: <select name="pokemonType">
-                <option value="Bug">Bug</option>
-                <option value="Dark">Dark</option>
-                <option value="Dragon">Dragon</option>
-                <option value="Electric">Electric</option>
-                <option value="Fairy">Fairy</option>
-                <option value="Fighting">Fighting</option>
-                <option value="Fire">Fire</option>
-                <option value="Flying">Flying</option>
-                <option value="Ghost">Ghost</option>
-                <option value="Grass">Grass</option>
-                <option value="Ground">Ground</option>
-                <option value="Ice">Ice</option>
-                <option value="Normal">Normal</option>
-                <option value="Poison">Poison</option>
-                <option value="Psychic">Psychic</option>
-                <option value="Rock">Rock</option>
-                <option value="Steel">Steel</option>
-                <option value="Water">Water</option>
-              </select></label>
-            <label>Limit: <input type="number" name="limit" min="0"></label>
-            <label>Offset: <input type="number" name="offset" min="0"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">POST /pokedex/addPokemon</div>
-      <div class="content">
-        <div class="content-box">
-          <form data-method="POST" data-format="json" data-endpoint="/pokedex/addPokemon" novalidate>
-            <label>Name: <input type="text" name="name"></label>
-            <label>Type: <select name="pokemonType">
-                <option value="Bug">Bug</option>
-                <option value="Dark">Dark</option>
-                <option value="Dragon">Dragon</option>
-                <option value="Electric">Electric</option>
-                <option value="Fairy">Fairy</option>
-                <option value="Fighting">Fighting</option>
-                <option value="Fire">Fire</option>
-                <option value="Flying">Flying</option>
-                <option value="Ghost">Ghost</option>
-                <option value="Grass">Grass</option>
-                <option value="Ground">Ground</option>
-                <option value="Ice">Ice</option>
-                <option value="Normal">Normal</option>
-                <option value="Poison">Poison</option>
-                <option value="Psychic">Psychic</option>
-                <option value="Rock">Rock</option>
-                <option value="Steel">Steel</option>
-                <option value="Water">Water</option>
-              </select></label>
-            <label>Image URL (optional): <input type="text" name="img"></label>
-            <label>Height (optional): <input type="text" name="height"></label>
-            <label>Weight (optional): <input type="text" name="weight"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">POST /pokedex/changePokemonName</div>
-      <div class="content">
-        <div class="content-box">
-          <p class="note">This form sends its data as application/x-www-form-urlencoded.</p>
-          <form data-method="POST" data-format="form" data-endpoint="/pokedex/changePokemonName" novalidate>
-            <label>Pokedex Num: <input type="number" name="pokedexNum" min="1"></label>
-            <label>New Name: <input type="text" name="name"></label>
-            <button type="submit">Send Request</button>
-          </form>
-          <div class="result"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  </section>
 </body>
 
 </html>

@@ -1,181 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pokedex API - Documentation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
   <link rel="stylesheet" type="text/css" href="/style.css">
   <script src="/docs.js"></script>
 </head>
 
 <body>
-  <nav>
-    <a href="/">Test Page</a>
-    <a href="/docs.html" class="current">API Documentation</a>
+  <nav class="navbar is-light" aria-label="main navigation">
+    <div class="navbar-menu is-active">
+      <div class="navbar-start">
+        <a class="navbar-item" href="/">Test Page</a>
+        <a class="navbar-item is-active" href="/docs.html">API Documentation</a>
+      </div>
+    </div>
   </nav>
-  <div class="mainContent">
-    <h1>Pokedex API Documentation</h1>
-    <p>These are the endpoints for my Pokedex API. Click one to see how to use it.</p>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Pokedex API Documentation</h1>
+      <p class="subtitle">These are the endpoints for my Pokedex API. Click one to see how to use it.</p>
 
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getAll</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/getAll</p>
-          <p>Methods: GET, HEAD</p>
-          <div class="param">
-            <h4>Query params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getAll</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/getAll</p>
+            <p><strong>Methods:</strong> GET, HEAD</p>
+            <div class="content mt-3">
+              <h4>Query params</h4>
+              <ul>
               <li>limit (number, optional)</li>
               <li>offset (number, optional)</li>
-            </ul>
-          </div>
-          <p>Returns: JSON with total, count and an array of pokemon. Sends a 400 if limit or offset is not a number.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">GET /pokedex/getAll?limit=2</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">200 OK
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> JSON with total, count and an array of pokemon. Sends a 400 if limit or offset is not a number.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>GET /pokedex/getAll?limit=2</pre>
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>200 OK
 { "total": 151, "count": 2, "pokemon": [ { "id": 1, "name": "Bulbasaur", ... }, { "id": 2, "name": "Ivysaur", ... } ] }</pre>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByNum</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/getPokemonByNum</p>
-          <p>Methods: GET, HEAD</p>
-          <div class="param">
-            <h4>Query params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByNum</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/getPokemonByNum</p>
+            <p><strong>Methods:</strong> GET, HEAD</p>
+            <div class="content mt-3">
+              <h4>Query params</h4>
+              <ul>
               <li>pokedexNum (number, required)</li>
-            </ul>
-          </div>
-          <p>Returns: JSON with one pokemon object. Sends a 400 if pokedexNum is missing or not a number, and a 404 if there is no pokemon with that number.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">GET /pokedex/getPokemonByNum?pokedexNum=25</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">200 OK
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> JSON with one pokemon object. Sends a 400 if pokedexNum is missing or not a number, and a 404 if there is no pokemon with that number.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>GET /pokedex/getPokemonByNum?pokedexNum=25</pre>
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>200 OK
 { "pokemon": { "id": 25, "name": "Pikachu", "type": ["Electric"], ... } }</pre>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByType</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/getPokemonByType</p>
-          <p>Methods: GET, HEAD</p>
-          <div class="param">
-            <h4>Query params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByType</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/getPokemonByType</p>
+            <p><strong>Methods:</strong> GET, HEAD</p>
+            <div class="content mt-3">
+              <h4>Query params</h4>
+              <ul>
               <li>pokemonType (string, required)</li>
               <li>limit (number, optional)</li>
               <li>offset (number, optional)</li>
-            </ul>
-          </div>
-          <p>Returns: JSON with total, count and an array of the pokemon that have that type. Sends a 400 if pokemonType is missing or not a real type.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">GET /pokedex/getPokemonByType?pokemonType=Dragon</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">200 OK
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> JSON with total, count and an array of the pokemon that have that type. Sends a 400 if pokemonType is missing or not a real type.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>GET /pokedex/getPokemonByType?pokemonType=Dragon</pre>
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>200 OK
 { "total": 3, "count": 3, "pokemon": [ { "name": "Dratini", ... }, { "name": "Dragonair", ... }, { "name": "Dragonite", ... } ] }</pre>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">GET, HEAD /pokedex/getPokemonByWeakness</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/getPokemonByWeakness</p>
-          <p>Methods: GET, HEAD</p>
-          <div class="param">
-            <h4>Query params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>GET, HEAD /pokedex/getPokemonByWeakness</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/getPokemonByWeakness</p>
+            <p><strong>Methods:</strong> GET, HEAD</p>
+            <div class="content mt-3">
+              <h4>Query params</h4>
+              <ul>
               <li>pokemonType (string, required)</li>
               <li>limit (number, optional)</li>
               <li>offset (number, optional)</li>
-            </ul>
-          </div>
-          <p>Returns: JSON with total, count and an array of the pokemon that are weak to that type. Sends a 400 if pokemonType is missing or not a real type.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">GET /pokedex/getPokemonByWeakness?pokemonType=Fairy&limit=1</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">200 OK
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> JSON with total, count and an array of the pokemon that are weak to that type. Sends a 400 if pokemonType is missing or not a real type.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>GET /pokedex/getPokemonByWeakness?pokemonType=Fairy&amp;limit=1</pre>
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>200 OK
 { "total": 11, "count": 1, "pokemon": [ { "name": "Mankey", ... } ] }</pre>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">POST /pokedex/addPokemon</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/addPokemon</p>
-          <p>Methods: POST</p>
-          <div class="param">
-            <h4>Body params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>POST /pokedex/addPokemon</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/addPokemon</p>
+            <p><strong>Methods:</strong> POST</p>
+            <div class="content mt-3">
+              <h4>Body params</h4>
+              <ul>
               <li>name (string, required)</li>
               <li>pokemonType (string, required)</li>
               <li>img (string, optional)</li>
               <li>height (string, optional)</li>
               <li>weight (string, optional)</li>
-            </ul>
-          </div>
-          <p>Returns: The body can be JSON or x-www-form-urlencoded. Sends back a 201 with a message and the new pokemon. Sends a 400 if something is missing or invalid.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">POST /pokedex/addPokemon
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> The body can be JSON or x-www-form-urlencoded. Sends back a 201 with a message and the new pokemon. Sends a 400 if something is missing or invalid.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>POST /pokedex/addPokemon
 Content-Type: application/json
 
 { "name": "Fuecoco", "pokemonType": "Fire" }</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">201 Created
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>201 Created
 { "message": "Created Successfully", "pokemon": { "id": 152, "name": "Fuecoco", "type": ["Fire"], ... } }</pre>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="endpoint">
-      <div class="collapsible">POST /pokedex/changePokemonName</div>
-      <div class="content">
-        <div class="content-box">
-          <p>URL: /pokedex/changePokemonName</p>
-          <p>Methods: POST</p>
-          <div class="param">
-            <h4>Body params</h4>
-            <ul>
+      <div class="mb-3">
+        <div class="collapsible notification is-light py-3 mb-2"><strong>POST /pokedex/changePokemonName</strong></div>
+        <div class="is-hidden">
+          <div class="box">
+            <p><strong>URL:</strong> /pokedex/changePokemonName</p>
+            <p><strong>Methods:</strong> POST</p>
+            <div class="content mt-3">
+              <h4>Body params</h4>
+              <ul>
               <li>pokedexNum (number, required)</li>
               <li>name (string, required)</li>
-            </ul>
-          </div>
-          <p>Returns: The body can be JSON or x-www-form-urlencoded. Sends back a 204 with nothing in the body. Sends a 404 if the pokemon does not exist, or a 400 if something is missing or invalid.</p>
-          <div class="example">
-            <p>Example request:</p>
-            <pre class="inline-code">POST /pokedex/changePokemonName
+              </ul>
+            </div>
+            <p class="mt-3"><strong>Returns:</strong> The body can be JSON or x-www-form-urlencoded. Sends back a 204 with nothing in the body. Sends a 404 if the pokemon does not exist, or a 400 if something is missing or invalid.</p>
+            <p class="mt-3"><strong>Example request:</strong></p>
+            <pre>POST /pokedex/changePokemonName
 Content-Type: application/x-www-form-urlencoded
 
-pokedexNum=25&name=Pika</pre>
-            <p>Example response:</p>
-            <pre class="inline-code">204 No Content</pre>
+pokedexNum=25&amp;name=Pika</pre>
+            <p class="mt-3"><strong>Example response:</strong></p>
+            <pre>204 No Content</pre>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </body>
 
 </html>

@@ -1,10 +1,9 @@
-// Shows or hides the endpoint bock under a clicked header
+// Shows or hides the endpoint under a clicked header
 const toggleEndpoint = (event) => {
   const header = event.target.closest('.collapsible');
 
   if (header) {
-    const content = header.nextElementSibling;
-    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+    header.nextElementSibling.classList.toggle('is-hidden');
     header.classList.toggle('open');
   }
 };

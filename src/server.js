@@ -88,6 +88,8 @@ const handlePost = (request, response, parsedUrl) => {
   }
 };
 
+// called when the client requests to fetch something from the server
+// figures out what the client is trying to do and handles it
 const onRequest = (request, response) => {
   runSafely(request, response, () => {
     // returns an object of url parts by name
